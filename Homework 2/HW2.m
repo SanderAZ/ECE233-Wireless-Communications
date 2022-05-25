@@ -7,24 +7,31 @@ L = 6;
 % Generate channel H_r
 H_r = 1/sqrt(2)*(rand(Nt, Nr) +1i*rand(Nt,Nr));
 
-% Generate random angles between a and b
-a = -pi/2;
-b = pi/2; 
-theta_i = (b-a).*rand() + a;
-phi_i = (b-a).*rand() + a;
-
-% Generate arrays as defined by (4) and (5) of the homework specs
-transmitters = 0:1:Nt-1;
-arx = arrayfun(@(L)srv(L, theta_i, Nt), transmitters);
-receivers = 0:1:Nr-1;
-atx = arrayfun(@(L)srv(L, phi_i, Nt), receivers);
-arx = transpose(arx);
-atx = transpose(atx);
-
-alpha = 1/sqrt(2)*(rand() +1i*rand());
-sigarg = cross(arx, atx');
-
 coeff = sqrt((Nt*Nr)/L);
+sig = zeros(Nt, Nr);
+
+for i = 1:L
+    % Generate random angles between a and b
+    a = -pi/2;
+    b = pi/2; 
+    theta_i = (b-a).*rand() + a;
+    phi_i = (b-a).*rand() + a;
+
+    % Generate arrays as defined by (4) and (5) of the homework specs
+    transmitters = 0:1:Nt-1;
+    arx = arrayfun(@(L)srv(L, theta_i, Nt), transmitters);
+    receivers = 0:1:Nr-1;
+    atx = arrayfun(@(L)srv(L, phi_i, Nt), receivers);
+    arx = transpose(arx);
+    atx = transpose(atx);
+
+    % Generate random path gain...
+    alpha = 1/sqrt(2)*(rand() +1i*rand());
+    % ...and multiply it linearly to the result of a_rx*a_tx'
+    sig = sig + alpha*(arx*atx');
+end
+
+H_s = coeff * sig;
 
 % % PROBLEM 3
 % % Divide 1000 symbols into a rectangular array, one symbol per column

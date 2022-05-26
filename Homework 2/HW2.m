@@ -1,4 +1,4 @@
-
+clear all
 % % PROBLEM 2
 % % Input given parameters
 % Nt = 8;
@@ -33,6 +33,7 @@
 % H_s = coeff * sig;
 
 % PROBLEM 3
+% Generate random 4-QAM symbols
 bits1=randi([0 1],2,1000);
 s1=qammod(bits1, 4, 'InputType', 'bit', 'UnitAveragePower', true);
 bits2 = zeros(2,1000);
@@ -54,7 +55,7 @@ phi1 = deg2rad(30);
 phi2 = deg2rad(40);
 
 % Create channels h1 and h2, with # of antennae N
-N = 8;
+N = 32;
 antennae = 0:1:N-1;
 h1 = arrayfun(@(L)exp(L*-1i*pi*sin(phi1)), antennae);
 h2 = arrayfun(@(L)exp(L*-1i*pi*sin(phi2)), antennae);
@@ -66,20 +67,21 @@ P = Hherm/(H*Hherm);
 st = [s1t.',s2t.'].';
 x = P*st;
 
-%TODO: Fill out Z
+% Adjust betas for each section
 beta_1 = 1;
-beta_3 = 0;
-% z = beta_1*x + beta_3*x.*(abs(x)).^2;
+beta_3 = -133;
 
+% Calculate z(t) as given in equation (10)
 for i = 1:8
     z(i,:) = beta_1*x(i,:) + beta_3.*x(i,:)*(abs(x(i,:)))'.^2;
 end
 
-pwelch(z(1,:), [], [], [], 'mean', 'centered');
+% Graph PST of z(1)
+% pwelch(z(1,:), [], [], [], 'mean', 'centered');
 
-%TODO: get G
-% a_phi = exp(-j.*pi.*((0:N1-1)-1).*sin(phi_radian(i))).';
-% g_phi(1,i) =mean(abs(a_phi'*zn).^2);
+
+ a_phi = exp(-1i.*pi.*((0:N1-1)-1).*sin(phi_radian(i))).';
+ g_phi(1,i) =mean(abs(a_phi'*zn).^2);
 
 
 function srv = srv(num, ang, ants)

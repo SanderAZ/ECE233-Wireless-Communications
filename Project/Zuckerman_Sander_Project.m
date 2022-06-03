@@ -24,6 +24,7 @@ for n = 1:length(N)                                             % Loop through a
             b_in = randi([0 1],N(n),1);                                         % Generate random signal
             x = qpskmod(b_in);                                                  % Shape signal to QPSK symbol
             noise = sqrt(1/(2*SNR_lin)) * (randn(N(n),1) + 1j*randn(N(n),1));   % Generate complex noise samples with noise power = 1/SNR_lin
+            % Maybe divide by N here?
             y = H*x+noise;                                                      % Received signal
 
             % Zero-Forcing (ZF)

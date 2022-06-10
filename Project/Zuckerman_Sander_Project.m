@@ -21,11 +21,11 @@ for n = 1:length(N)                                             % Loop through a
 %                 disp('Currently at #'+string(i)+' at SNR '+ string(SNR(s)));
 %             end
 
-            b_in = randi([0 1],N(n),1);                                         % Generate random signal
-            x = qpskmod(b_in);                                                  % Shape signal to QPSK symbol
-            noise = sqrt(1/(2*SNR_lin)) * (randn(N(n),1) + 1j*randn(N(n),1));   % Generate complex noise samples with noise power = 1/SNR_lin
+            b_in = randi([0 1],N(n),1);                                             % Generate random signal
+            x = qpskmod(b_in);                                                      % Shape signal to QPSK symbol
+            noise = sqrt(1/(2*SNR_lin)) * (randn(N(n),1) + 1j*randn(N(n),1)/N(n));  % Generate complex noise samples with noise power = 1/SNR_lin
             % Maybe divide by N here?
-            y = H*x+noise;                                                      % Received signal
+            y = H*x+noise;                                                          % Received signal
 
             % Zero-Forcing (ZF)
             G_ZF = inv(H'*H)*H';
@@ -41,10 +41,24 @@ for n = 1:length(N)                                             % Loop through a
                 row = G(j,:,1);
                 G1j(j) = norm(row); % find ||(G1)j||^2
             end
-            [val,k(1)] = min(G1j(:));    % find the minimum ||(G1)j||^2 for all j
-%             for K = k1:length(G1)
-%                 %w(k) =
-%             end
+            [~,k(1)] = min(G1j(:));    % find the minimum ||(G1)j||^2 for all j
+            for K = 1:length(H)
+                w(k(K),:) = G(k(K),:,K);
+                r(k(K),:) = w(k(K),:)'*y(K);
+                foo = r(k(K),:);
+                alpha(k(K),:) = qpskdemod(reshape(foo, [length(foo), 1]));
+                y(i+1) = y(i) - alpha(K(k))*H(K,:);
+                G(:,:,K+1) = G_ZF;
+                G(k(K),:,K+1) = zeros(k(K), 1);
+                for j = 1:length(G)
+                    if ~ismember(j, k)
+                        row = G(j,:,1);
+                        G1j(j) = norm(row); % find ||(G1)j||^2
+                    end
+                end
+                [~,k(K+1)] = min(G1j(:));    % find the minimum ||(G1)j||^2 for all j
+                i = i + 1;
+            end
 
 
             % Maximum Likelihood (ML)
